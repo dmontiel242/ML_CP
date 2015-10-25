@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Ml cp by dmontiel242</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Ml cp</h1>
+      <h2 class="project-tagline">Machine Learning Course Project</h2>
+      <a href="https://github.com/dmontiel242/ML_CP" class="btn">View on GitHub</a>
+      <a href="https://github.com/dmontiel242/ML_CP/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/dmontiel242/ML_CP/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <hr>
+
+<p>title: "Machine Learning Course Project"
+author: "dmontiel242"
+date: "October 25, 2015"</p>
+
+<h2>
+<a id="output-html_document" class="anchor" href="#output-html_document" aria-hidden="true"><span class="octicon octicon-link"></span></a>output: html_document</h2>
+
+<h2>
+<a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Synopsis:</h2>
+
+<p>A random forest model with cross-validation is applied to fitness data in order to assess activity quality, which is the factor variable classe in the pml data set. The model creates a training and test set using the createDataPartition function in the caret package. </p>
+
+<h2>
+<a id="out-of-sample-error-and-cross-validation" class="anchor" href="#out-of-sample-error-and-cross-validation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Out of Sample Error and cross-validation</h2>
+
+<p>The error rate from the test set provides a measure of the out of sample error. Cross-validation is performed using the trControl option in the train in the caret package and is set to use k-folds cross-validation with 5 folds.</p>
+
+<h2>
+<a id="data-pre-processing" class="anchor" href="#data-pre-processing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Pre-Processing:</h2>
+
+<p>The data is preprocessed using principal component analysis , variables with near zero variance are removed and all remaining variables are converted to numeric variables. </p>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-smi">caret</span>)
+library(<span class="pl-smi">randomForest</span>)
+<span class="pl-smi">url</span> <span class="pl-k">&lt;-</span> <span class="pl-s"><span class="pl-pds">'</span>https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv<span class="pl-pds">'</span></span>
+
+<span class="pl-k">if</span> (<span class="pl-k">!</span>exists(<span class="pl-s"><span class="pl-pds">'</span>pmldata<span class="pl-pds">'</span></span>)){
+  print(<span class="pl-s"><span class="pl-pds">'</span>dowloading data<span class="pl-pds">'</span></span>)
+  <span class="pl-smi">pml</span> <span class="pl-k">&lt;-</span> download.file(<span class="pl-smi">url</span>,<span class="pl-v">destfile</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>C:<span class="pl-cce">\\</span>Users<span class="pl-cce">\\</span>Dan<span class="pl-cce">\\</span>Desktop<span class="pl-cce">\\</span>Coursera<span class="pl-cce">\\</span>pmltraining.csv<span class="pl-pds">"</span></span>)
+  <span class="pl-v">pmldata</span> <span class="pl-k">=</span> read.csv(<span class="pl-s"><span class="pl-pds">"</span>C:<span class="pl-cce">\\</span>Users<span class="pl-cce">\\</span>Dan<span class="pl-cce">\\</span>Desktop<span class="pl-cce">\\</span>Coursera<span class="pl-cce">\\</span>pmltraining.csv<span class="pl-pds">"</span></span>)
+}
+<span class="pl-c">#subset data into training and test sets for cross-validation</span>
+<span class="pl-c">#inTrain &lt;- createDataPartition(y=pmldata$classe, p = 0.75,list = FALSE)</span>
+<span class="pl-smi">classy</span> <span class="pl-k">&lt;-</span> <span class="pl-k">factor</span>(c(<span class="pl-smi">pmldata</span><span class="pl-k">$</span><span class="pl-smi">classe</span>))
+<span class="pl-smi">numcol</span> <span class="pl-k">&lt;-</span> length(colnames(<span class="pl-smi">pmldata</span>))
+<span class="pl-c">#isnumer &lt;- sapply(pmldata, is.numeric)</span>
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmldata</span>[,<span class="pl-k">-</span><span class="pl-smi">numcol</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span><span class="pl-smi">pmldata</span>
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">pmlnumer</span> <span class="pl-k">&lt;-</span> <span class="pl-k">data.frame</span>(sapply(<span class="pl-smi">pmlnumer</span>, <span class="pl-smi">as.numeric</span>))
+<span class="pl-smi">pmldat</span><span class="pl-k">&lt;-</span> <span class="pl-smi">pmlnumer</span>
+<span class="pl-c">#pmldat &lt;- pmldat[complete.cases(pmldat),]</span>
+<span class="pl-smi">nzv</span> <span class="pl-k">&lt;-</span> nearZeroVar(<span class="pl-smi">pmldat</span>)
+<span class="pl-smi">pmldat</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmldat</span>[,<span class="pl-k">-</span><span class="pl-smi">nzv</span>]
+row.names(<span class="pl-smi">pmldat</span>) <span class="pl-k">&lt;-</span> <span class="pl-c1">1</span><span class="pl-k">:</span>nrow(<span class="pl-smi">pmldat</span>)
+<span class="pl-smi">pmldat</span>[is.na(<span class="pl-smi">pmldat</span>)]<span class="pl-k">&lt;-</span><span class="pl-c1">0</span>
+<span class="pl-smi">pmldat</span>[,<span class="pl-s"><span class="pl-pds">'</span>classe<span class="pl-pds">'</span></span>] <span class="pl-k">&lt;-</span> <span class="pl-k">factor</span>(<span class="pl-smi">pmldat</span>[,<span class="pl-s"><span class="pl-pds">'</span>classe<span class="pl-pds">'</span></span>])
+<span class="pl-smi">inTrain</span> <span class="pl-k">&lt;-</span> createDataPartition(<span class="pl-v">y</span><span class="pl-k">=</span><span class="pl-smi">pmldat</span><span class="pl-k">$</span><span class="pl-smi">classe</span>, <span class="pl-v">p</span> <span class="pl-k">=</span> <span class="pl-c1">0.7</span>,<span class="pl-v">list</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+<span class="pl-smi">training</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmldat</span>[<span class="pl-smi">inTrain</span>,]
+<span class="pl-smi">testing</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">pmldat</span>[<span class="pl-k">-</span><span class="pl-smi">inTrain</span>,]
+<span class="pl-smi">preProc</span> <span class="pl-k">&lt;-</span> preProcess(<span class="pl-smi">training</span>, <span class="pl-v">method</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>pca<span class="pl-pds">'</span></span>, <span class="pl-v">thresh</span> <span class="pl-k">=</span> <span class="pl-c1">0.90</span>)
+<span class="pl-smi">trainPC</span> <span class="pl-k">&lt;-</span> predict(<span class="pl-smi">preProc</span>,<span class="pl-smi">training</span>)</pre></div>
+
+<p>The model was applied with the train function in the caret package but was not executed to save time in knitting this document.</p>
+
+<p>modelfit2 &lt;- train(training$classe ~., method = 'rf',trControl=trainControl(method="cv",number=5),data=trainPC)
+saveRDS(modelfit2,'mysavedModel002.rds')</p>
+
+<p>Using submission set was downloaded and pre-processed in the same way as the training set. The predict function was applied to the cleaned and processed submission set with the same PCA preprocessing parameters.</p>
+
+<div class="highlight highlight-source-r"><pre>
+library(<span class="pl-smi">RCurl</span>)
+
+<span class="pl-smi">url2</span> <span class="pl-k">&lt;-</span> <span class="pl-s"><span class="pl-pds">'</span>https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv<span class="pl-pds">'</span></span>
+
+<span class="pl-k">if</span> (<span class="pl-k">!</span>exists(<span class="pl-s"><span class="pl-pds">'</span>testdata<span class="pl-pds">'</span></span>)){
+<span class="pl-smi">testdat</span> <span class="pl-k">&lt;-</span> getURL(<span class="pl-smi">url2</span>,
+               <span class="pl-v">ssl.verifypeer</span><span class="pl-k">=</span><span class="pl-c1">0L</span>, <span class="pl-v">followlocation</span><span class="pl-k">=</span><span class="pl-c1">1L</span>)
+
+<span class="pl-c">#  testdat &lt;- download.file(url2,destfile = "C:\\Users\\Dan\\Desktop\\Coursera\\testdata.csv")</span>
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span>  read.csv(<span class="pl-s"><span class="pl-pds">"</span>C:<span class="pl-cce">\\</span>Users<span class="pl-cce">\\</span>Dan<span class="pl-cce">\\</span>Desktop<span class="pl-cce">\\</span>Coursera<span class="pl-cce">\\</span>testdata.csv<span class="pl-pds">"</span></span>)
+}
+<span class="pl-smi">testdata</span><span class="pl-k">&lt;-</span> <span class="pl-k">data.frame</span>(sapply(<span class="pl-smi">testdata</span>, <span class="pl-smi">as.numeric</span>))
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-c1">1</span>]
+
+<span class="pl-smi">testdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">testdata</span>[,<span class="pl-k">-</span><span class="pl-smi">nzv</span>]
+<span class="pl-smi">testdata</span>[is.na(<span class="pl-smi">testdata</span>)]<span class="pl-k">&lt;-</span><span class="pl-c1">0</span>
+
+<span class="pl-c">#testpc &lt;- predict(preProc,testdata)</span>
+<span class="pl-c">#answers = factor(predict(modelfit2,testpc),labels=c('A','B','C','D','E'))</span>
+<span class="pl-v">pml_write_files</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(<span class="pl-smi">x</span>){
+  <span class="pl-v">n</span> <span class="pl-k">=</span> length(<span class="pl-smi">x</span>)
+  <span class="pl-k">for</span>(<span class="pl-smi">i</span> <span class="pl-k">in</span> <span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-smi">n</span>){
+    <span class="pl-v">filename</span> <span class="pl-k">=</span> paste0(<span class="pl-s"><span class="pl-pds">"</span>problem_id_<span class="pl-pds">"</span></span>,<span class="pl-smi">i</span>,<span class="pl-s"><span class="pl-pds">"</span>.txt<span class="pl-pds">"</span></span>)
+    write.table(<span class="pl-smi">x</span>[<span class="pl-smi">i</span>],<span class="pl-v">file</span><span class="pl-k">=</span><span class="pl-smi">filename</span>,<span class="pl-v">quote</span><span class="pl-k">=</span><span class="pl-c1">FALSE</span>,<span class="pl-v">row.names</span><span class="pl-k">=</span><span class="pl-c1">FALSE</span>,<span class="pl-v">col.names</span><span class="pl-k">=</span><span class="pl-c1">FALSE</span>)
+  }
+}
+<span class="pl-c">#pml_write_files(answers)</span></pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/dmontiel242/ML_CP">Ml cp</a> is maintained by <a href="https://github.com/dmontiel242">dmontiel242</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
