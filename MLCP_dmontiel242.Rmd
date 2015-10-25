@@ -1,0 +1,100 @@
+---
+title: "Machine Learning Course Project"
+author: "dmontiel242"
+date: "October 25, 2015"
+output: html_document
+---
+
+## Synopsis: 
+A random forest model with cross-validation is applied to fitness data in order to assess activity quality, which is the factor variable classe in the pml data set. The model creates a training and test set using the createDataPartition function in the caret package. 
+
+## Out of Sample Error and cross-validation
+
+The error rate from the test set provides a measure of the out of sample error. Cross-validation is performed using the trControl option in the train in the caret package and is set to use k-folds cross-validation with 5 folds.
+
+## Data Pre-Processing:
+The data is preprocessed using principal component analysis , variables with near zero variance are removed and all remaining variables are converted to numeric variables. 
+
+
+```{r}
+library(caret)
+library(randomForest)
+url <- 'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv'
+
+if (!exists('pmldata')){
+  print('dowloading data')
+  pml <- download.file(url,destfile = "C:\\Users\\Dan\\Desktop\\Coursera\\pmltraining.csv")
+  pmldata = read.csv("C:\\Users\\Dan\\Desktop\\Coursera\\pmltraining.csv")
+}
+#subset data into training and test sets for cross-validation
+#inTrain <- createDataPartition(y=pmldata$classe, p = 0.75,list = FALSE)
+classy <- factor(c(pmldata$classe))
+numcol <- length(colnames(pmldata))
+#isnumer <- sapply(pmldata, is.numeric)
+pmlnumer <- pmldata[,-numcol]
+pmlnumer <-pmldata
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- pmlnumer[,-1]
+pmlnumer <- data.frame(sapply(pmlnumer, as.numeric))
+pmldat<- pmlnumer
+#pmldat <- pmldat[complete.cases(pmldat),]
+nzv <- nearZeroVar(pmldat)
+pmldat <- pmldat[,-nzv]
+row.names(pmldat) <- 1:nrow(pmldat)
+pmldat[is.na(pmldat)]<-0
+pmldat[,'classe'] <- factor(pmldat[,'classe'])
+inTrain <- createDataPartition(y=pmldat$classe, p = 0.7,list = FALSE)
+training <- pmldat[inTrain,]
+testing <- pmldat[-inTrain,]
+preProc <- preProcess(training, method = 'pca', thresh = 0.90)
+trainPC <- predict(preProc,training)
+```
+The model was applied with the train function in the caret package but was not executed to save time in knitting this document.
+
+modelfit2 <- train(training$classe ~., method = 'rf',trControl=trainControl(method="cv",number=5),data=trainPC)
+saveRDS(modelfit2,'mysavedModel002.rds')
+
+
+Using submission set was downloaded and pre-processed in the same way as the training set. The predict function was applied to the cleaned and processed submission set with the same PCA preprocessing parameters.
+```{r}
+
+library(RCurl)
+
+url2 <- 'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv'
+
+if (!exists('testdata')){
+testdat <- getURL(url2,
+               ssl.verifypeer=0L, followlocation=1L)
+
+#  testdat <- download.file(url2,destfile = "C:\\Users\\Dan\\Desktop\\Coursera\\testdata.csv")
+testdata <-  read.csv("C:\\Users\\Dan\\Desktop\\Coursera\\testdata.csv")
+}
+testdata<- data.frame(sapply(testdata, as.numeric))
+testdata <- testdata[,-1]
+testdata <- testdata[,-1]
+testdata <- testdata[,-1]
+testdata <- testdata[,-1]
+testdata <- testdata[,-1]
+testdata <- testdata[,-1]
+testdata <- testdata[,-1]
+
+testdata <- testdata[,-nzv]
+testdata[is.na(testdata)]<-0
+
+#testpc <- predict(preProc,testdata)
+#answers = factor(predict(modelfit2,testpc),labels=c('A','B','C','D','E'))
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+#pml_write_files(answers)
+```
+
